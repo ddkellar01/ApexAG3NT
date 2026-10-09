@@ -1,0 +1,20 @@
+system:
+  log_level: "INFO"
+  workspace_dir: "./workspace"
+  max_concurrent_agents: 4
+
+models:
+  primary_planner: "gemini-2.5-pro"
+  cli_scaffolder: "claude-3-5-sonnet-20240620"
+  fallback_model: "gpt-4o"
+  timeout_seconds: 60
+
+sandbox:
+  engine: "docker" # Options: docker, termux-native, local
+  strict_mode: true
+  enable_ebpf_tracing: false
+  network_access: false
+
+web3:
+  default_rpc: "https://testnet-rpc.monad.xyz"
+  chain_id: 10143
