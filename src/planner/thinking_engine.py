@@ -1,34 +1,39 @@
 import asyncio
+from typing import Dict, Any, List
 from pydantic import BaseModel
-from typing import Optional
 
-class ThoughtOutput(BaseModel):
+class DeliberationResult(BaseModel):
     reasoning_chain: str
-    proposed_dag: dict
-    thinking_budget_used: int
+    proposed_dag: Dict[str, Any]
+    confidence_score: float
 
 class ThinkingEngine:
-    """Invokes Gemini Pro pre-execution reasoning tokens before committing to edits."""
-    
-    def __init__(self, level: str = "medium"):
-        self.level = level
-        self.budgets = {"minimal": 1024, "medium": 8192, "high": 32768}
-        self.max_tokens = self.budgets.get(level, 8192)
+    """Allocates token budgets and generates reasoning chains before execution."""
 
-    async def deliberate(self, prompt: str, context_blob: str) -> ThoughtOutput:
-        """Simulates the generation of internal reasoning tokens to plan the architectural approach."""
-        # In production, this calls the Gemini API with thinking tokens enabled.
-        await asyncio.sleep(1.5) # Simulate latency of reasoning 
+    def __init__(self, level: str = "high"):
+        self.level = level
+        # Allocate deliberative budget based on thinking level
+        self.max_tokens = 32768 if level == "high" else 8192
+
+    async def deliberate(self, objective: str, context: str) -> DeliberationResult:
+        """Simulates an extended thinking phase (e.g., using Gemini 2.5 Pro or o1 logic)."""
+        await asyncio.sleep(0.1) # Simulate API latency
         
-        simulated_reasoning = (
-            f"Evaluating: {prompt}\n"
-            f"1. Context indicates stateful variables in Target.py.\n"
-            f"2. A direct AST mutation might break thread safety.\n"
-            f"3. Need to isolate DB mutation logic to a separate task node."
+        # Mocking the internal monolithic reasoning trace
+        reasoning = (
+            f"Context indicates the objective is: {objective}. "
+            "First, we must parse the AST. Second, isolate the faulty function. "
+            "Finally, regenerate the method using Codex and verify."
         )
         
-        return ThoughtOutput(
-            reasoning_chain=simulated_reasoning,
-            proposed_dag={"nodes": ["analyze_db", "refactor_target", "run_pytest"]},
-            thinking_budget_used=self.max_tokens // 2
+        # Outputting a structured Directed Acyclic Graph plan
+        proposed_dag = {
+            "nodes": ["analyze_code", "refactor_ast", "run_tests"],
+            "edges": [("analyze_code", "refactor_ast"), ("refactor_ast", "run_tests")]
+        }
+
+        return DeliberationResult(
+            reasoning_chain=reasoning,
+            proposed_dag=proposed_dag,
+            confidence_score=0.92
         )
