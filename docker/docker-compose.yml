@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  apex-orchestrator:
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile.apex
+    container_name: apex-core
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ENVIRONMENT=production
+    volumes:
+      - ../workspace:/app/workspace
+      - /sys/kernel/debug:/sys/kernel/debug:rw # For eBPF access
+    privileged: true
+    network_mode: "host"
+
+  vector-db:
+    image: postgres:15-alpine
+    container_name: apex-pgvector
+    environment:
+      POSTGRES_USER: apex
+      POSTGRES_PASSWORD: ${DB_PASS:-apex_secure}
+      POSTGRES_DB: apex_memory
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
