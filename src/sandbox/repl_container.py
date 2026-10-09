@@ -1,27 +1,34 @@
-import docker
+import subprocess
+import tempfile
 import os
+from typing import Dict, Any
 
 class REPLSandbox:
-    """Isolated execution engine using Docker to prevent side effects on the host."""
-    
-    def __init__(self, image: str = "apexagent-sandbox:latest"):
-        self.client = docker.from_env()
-        self.image = image
-        self.workspace_bind = os.path.abspath(".")
+    """Executes generated code in an isolated environment (simulating Docker/Termux)."""
 
-    def execute_code(self, code_payload: str, command: str = "python3") -> dict:
-        """Executes generated AST/Code securely inside the container."""
+    def __init__(self, timeout: int = 10):
+        self.timeout = timeout
+
+    def execute_code(self, code_string: str, cmd_override: str = "python") -> Dict[str, Any]:
+        """Writes code to a temp file and executes it, capturing stdout/stderr."""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            temp_file.write(code_string)
+            temp_path = temp_file.name
+
         try:
-            container = self.client.containers.run(
-                self.image,
-                command=f"{command} -c \"{code_payload}\"",
-                volumes={self.workspace_bind: {'bind': '/workspace', 'mode': 'ro'}}, # Read-only for safety
-                working_dir="/workspace",
-                detach=False,
-                stdout=True,
-                stderr=True,
-                remove=True
+            result = subprocess.run(
+                [cmd_override, temp_path],
+                capture_output=True,
+                text=True,
+                timeout=self.timeout
             )
-            return {"status": "success", "output": container.decode('utf-8')}
-        except docker.errors.ContainerError as e:
-            return {"status": "error", "traceback": e.stderr.decode('utf-8')}
+            
+            if result.returncode == 0:
+                return {"status": "success", "output": result.stdout.strip()}
+            else:
+                return {"status": "error", "traceback": result.stderr.strip()}
+                
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "traceback": f"Execution timed out after {self.timeout}s."}
+        finally:
+            os.remove(temp_path)
