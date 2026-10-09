@@ -1,0 +1,23 @@
+version: "1.0"
+# Defines how the Grok-style router delegates sub-tasks parsed from the DAG
+
+task_mappings:
+  - signature: "read_only_search"
+    primary_model: "grok-4-7-router"
+    requires_sandbox: false
+    parallel_execution_allowed: true
+
+  - signature: "ast_mutation"
+    primary_model: "gpt-5-3-codex"
+    requires_sandbox: true
+    fallback_model: "claude-opus-4-8"
+
+  - signature: "architectural_decision"
+    primary_model: "gemini-3-pro-thinking"
+    requires_sandbox: false
+    thinking_level: "high"
+
+  - signature: "cli_tool_execution"
+    primary_model: "claude-opus-4-8"
+    requires_sandbox: true
+    mcp_enabled: true
