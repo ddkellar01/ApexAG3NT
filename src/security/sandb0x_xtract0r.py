@@ -1,6 +1,6 @@
 import re
 import urllib.parse
-from typing import List, Dict
+from typing import List, Dict, Any
 
 class Sandb0xXtract0r:
     """Monolithic utility for extracting obfuscated payloads and testing WAF rulesets."""
