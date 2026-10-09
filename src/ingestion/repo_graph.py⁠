@@ -1,0 +1,56 @@
+import ast
+import os
+from pathlib import Path
+import networkx as nx
+from typing import Dict, Set
+
+class RepoGraphMapper:
+    """Builds a persistent Directed Graph of workspace module dependencies using AST analysis."""
+
+    def __init__(self, root_dir: str = "."):
+        self.root_dir = Path(root_dir)
+        self.graph = nx.DiGraph()
+
+    def _extract_imports(self, file_path: Path) -> Set[str]:
+        """Extracts imported module names from a Python source file via AST."""
+        imports = set()
+        try:
+            tree = ast.parse(file_path.read_text(encoding="utf-8"), filename=str(file_path))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        imports.add(alias.name.split('.')[0])
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        imports.add(node.module.split('.')[0])
+        except Exception:
+            pass
+        return imports
+
+    def build_graph(self) -> nx.DiGraph:
+        """Walks the workspace and constructs a module dependency graph."""
+        py_files: Dict[str, Path] = {}
+        
+        for root, _, files in os.walk(self.root_dir):
+            if any(p in root for p in ['.git', 'venv', '__pycache__']):
+                continue
+            for f in files:
+                if f.endswith('.py'):
+                    p = Path(root) / f
+                    mod_name = p.stem
+                    py_files[mod_name] = p
+                    self.graph.add_node(mod_name, path=str(p))
+
+        for mod_name, file_path in py_files.items():
+            imports = self._extract_imports(file_path)
+            for imp in imports:
+                if imp in py_files:
+                    self.graph.add_edge(mod_name, imp)
+
+        return self.graph
+
+    def get_impacted_modules(self, target_module: str) -> Set[str]:
+        """Finds all modules that depend on the target module (upstream callers)."""
+        if target_module not in self.graph:
+            return set()
+        return set(nx.ancestors(self.graph, target_module))
