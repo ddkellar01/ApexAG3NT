@@ -1,25 +1,4 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "apexagent"
-version = "0.1.0"
-description = "Multi-model agentic developer harness and execution engine."
-authors = [{name = "ApexAgent Core Team"}]
-requires-python = ">=3.10"
-dependencies = [
-    "typer>=0.9.0",
-    "rich>=13.0.0",
-    "pyyaml>=6.0",
-    "docker>=6.1.3",
-    "gitpython>=3.1.32",
-    "pydantic>=2.0.0",
-    "networkx>=3.0" # For DAG Router
-]
-
-[project.scripts]
-apex = "apex_agent.cli:app"
-
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+pythonpath = [
+  "."
+]
