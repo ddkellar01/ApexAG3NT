@@ -1,0 +1,51 @@
+version: "1.0"
+
+orchestration:
+  default_routing_strategy: "cost_and_capability"
+  fallback_model: "gemini-3-pro-thinking"
+
+models:
+  gemini-3-pro-thinking:
+    provider: "google"
+    tier: 2
+    role: "deliberative_planning"
+    context_window: 2000000
+    supports_thinking_tokens: true
+    thinking_budget_levels:
+      minimal: 1024
+      medium: 8192
+      high: 32768
+
+  claude-opus-4-8:
+    provider: "anthropic"
+    tier: 4
+    role: "cli_harness_execution"
+    supports_mcp: true
+    native_tools: ["file_edit", "git_snapshot", "mcp_runner"]
+
+  gpt-5-3-codex:
+    provider: "openai"
+    tier: 4
+    role: "ast_codegen_repl"
+    sandbox_required: true
+    supports_ast_diff: true
+
+  grok-4-7-router:
+    provider: "xai"
+    tier: 3
+    role: "task_dag_routing"
+    realtime_ingestion: true
+
+routing_rules:
+  - task_type: "architectural_refactor"
+    primary: "gemini-3-pro-thinking"
+    secondary: "claude-opus-4-8"
+    thinking_level: "high"
+  - task_type: "ast_fix_and_unit_test"
+    primary: "gpt-5-3-codex"
+    secondary: "claude-opus-4-8"
+    thinking_level: "medium"
+  - task_type: "realtime_log_triage"
+    primary: "grok-4-7-router"
+    secondary: "gemini-3-pro-thinking"
+    thinking_level: "minimal"
