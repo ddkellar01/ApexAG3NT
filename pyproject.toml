@@ -1,4 +1,7 @@
 [tool.pytest.ini_options]
 pythonpath = [
-  "."
+    "."
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
