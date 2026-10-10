@@ -4,10 +4,8 @@ version = "0.1.0"
 description = "Autonomous multi-agent AI framework"
 requires-python = ">=3.11"
 
-[tool.pytest.ini_options]
-pythonpath = [
-    "."
-]
-
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
