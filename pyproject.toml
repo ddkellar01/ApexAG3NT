@@ -7,7 +7,9 @@ name = "apex-agent"
 version = "0.1.0"
 dependencies = [
     "pytest",
-    # Add your other project dependencies here
+    "fastapi",
+    "pydantic",
+    "httpx"
 ]
 
 [tool.setuptools.packages.find]
