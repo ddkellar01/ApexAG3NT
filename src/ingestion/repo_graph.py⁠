@@ -54,4 +54,3 @@ class RepoGraphMapper:
         if target_module not in self.graph:
             return set()
         return set(nx.ancestors(self.graph, target_module))
-
