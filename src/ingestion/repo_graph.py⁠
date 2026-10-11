@@ -30,7 +30,7 @@ class RepoGraphMapper:
     def build_graph(self) -> nx.DiGraph:
         """Walks the workspace and constructs a module dependency graph."""
         py_files: Dict[str, Path] = {}
-        
+
         for root, _, files in os.walk(self.root_dir):
             if any(p in root for p in ['.git', 'venv', '__pycache__']):
                 continue
