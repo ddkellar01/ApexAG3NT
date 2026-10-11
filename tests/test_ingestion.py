@@ -1,18 +1,17 @@
 import pytest
-import asyncio
 
 from ingestion.stream_listener import StreamListener
-from ingestion.repo_graph import RepoGraph
+from ingestion.repo_graph import RepoGraphMapper
 
 @pytest.mark.asyncio
 async def test_stream_listener():
     listener = StreamListener(buffer_size=5)
-    await listener.push_event({"github_webhook": {"action": "push"}})
+    await listener.push_event("github_webhook", {"action": "push"})
 
     # Test generator consumption
     async for event in listener.stream_generator():
         assert event["source"] == "github_webhook"
-        assert event["action"] == "push"
+        assert event["data"]["action"] == "push"
         # Break to avoid infinite loop in test
         break
 
@@ -24,11 +23,11 @@ def test_repo_graph_mapper(tmp_path):
     file_a.write_text("import b")
     file_b.write_text("def run(): pass")
 
-    mapper = RepoGraph(tmp_path)
+    mapper = RepoGraphMapper(tmp_path)
     graph = mapper.build_graph()
 
     assert "a" in graph.nodes
     assert "b" in graph.nodes
 
-    impacted = graph.get_impacted_modules("b")
+    impacted = mapper.get_impacted_modules("b")
     assert "a" in impacted
