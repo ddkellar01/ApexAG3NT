@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from src.web3.monad_executor import MonadExecutor
+from src.web3_core.monad_executor import MonadExecutor
 
 class MonYieldRouter:
     """Handles time-locked principal protection and dynamic yield routing on Monad."""
@@ -17,14 +17,14 @@ class MonYieldRouter:
         deposit_sim = self.executor.estimate_transaction(
             self.contract_address, self.abi, "depositPrincipal", amount
         )
-        
+
         if deposit_sim["status"] == "reverted":
             return {"success": False, "step": "deposit", "error": deposit_sim.get("error")}
 
         route_sim = self.executor.estimate_transaction(
             self.contract_address, self.abi, "routeYield", beneficiary
         )
-        
+
         return {
             "success": route_sim["status"] == "success",
             "gas_estimates": {
