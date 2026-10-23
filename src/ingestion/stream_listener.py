@@ -13,9 +13,24 @@ class StreamListener:
         self.buffer_size = buffer_size
         self._queue: asyncio.Queue = asyncio.Queue(maxsize=buffer_size)
 
-    async def push_event(self, source: str, event_data: Dict[str, Any]):
-        """Pushes an incoming webhook or log event into the real-time buffer."""
-        payload = {"source": source, "data": event_data}
+    async def push_event(self, source, event_data: Dict[str, Any] = None):
+        """Pushes an incoming webhook or log event into the real-time buffer.
+
+        Accepts both call formats:
+          push_event("github_webhook", {"action": "push"})
+          push_event({"github_webhook": {"action": "push"}})
+        Both normalize to {"source": <source>, "data": <event_data>}.
+        """
+        if event_data is None and isinstance(source, dict):
+            if "source" in source and "data" in source:
+                payload = {"source": source["source"], "data": source["data"]}
+            elif len(source) == 1:
+                src, data = next(iter(source.items()))
+                payload = {"source": src, "data": data}
+            else:
+                payload = {"source": "unknown", "data": source}
+        else:
+            payload = {"source": source, "data": event_data}
         if self._queue.full():
             logger.warning("Stream buffer full. Evicting oldest log event.")
             self._queue.get_nowait()
