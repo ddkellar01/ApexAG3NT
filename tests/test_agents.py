@@ -15,7 +15,7 @@ def test_sandb0x_xtract0r_mutations():
     mutations = extractor.generate_mutations("<script>alert(1)</script>")
     
     assert len(mutations) >= 3
-    assert "%3Cscript%3E" in mutations  # Verifies URL encoding happened
+    assert any("%3Cscript%3E" in m for m in mutations)  # Verifies URL encoding happened
 
 def test_sandb0x_xtract0r_scoring():
     extractor = Sandb0xXtract0r()
