@@ -6,7 +6,7 @@ from ingestion.repo_graph import RepoGraphMapper
 @pytest.mark.asyncio
 async def test_stream_listener():
     listener = StreamListener(buffer_size=5)
-    await listener.push_event({"github_webhook": {"action": "push"}})
+    await listener.push_event("github_webhook", {"action": "push"})
 
     # Test generator consumption
     async for event in listener.stream_generator():
